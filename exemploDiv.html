@@ -1,0 +1,43 @@
+<html>
+    <head>
+        <title>Exemplo com tag DIV</title>
+        <style>
+            *{
+                margin: 0px;
+            }
+            div{
+                position: absolute;
+                border: 1px solid #000;
+                width: 150px;
+                height: 150px;
+                text-align: center;
+            }
+            #cx1{
+                left: 150px;
+                margin-left: 5px;
+            }
+            .caixa{
+                border: 1px solid #000;
+                width: 650px;
+                top: 160px;
+                background-color: red;
+            }
+            .caixa div{
+                position: relative;
+                background-color: yellowgreen;
+                
+            }
+        </style>
+    </head>
+    <body>
+        <div id="cx1">CAIXA 01</div>
+        <div id="cx2">CAIXA 02</div>
+        
+        <div class="caixa">
+        <div>CAIXA 03</div>
+        <div>CAIXA 04</div>
+        </div>
+
+
+    </body>
+</html>

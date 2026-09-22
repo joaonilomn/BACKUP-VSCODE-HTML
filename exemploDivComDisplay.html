@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<head>
+    <title>Exemplo div com display</title>
+    <style>
+        h5{
+            margin: 0px;
+        }
+        div{
+            border: 1px solid #000;
+            width: 100px;
+            height: 100px;
+            }
+        #conteiner-total{
+            border: 1px solid #CCC;
+            display: grid;
+            width: 450px;
+            height: 120px;
+            grid-template-columns: 110px 110px 110px 110px;
+        }
+        #conteiner-total div{
+            border: 1px solid #999;
+            margin: 10px;
+            border-radius: 5px;
+            background-color: #CCC;
+
+        }
+        #conteiner-total h5{
+            text-align: center;
+            margin-top: 5px;
+            border-bottom: 1px solid #000;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+            font-size: 9px;
+        }
+    </style>
+</head>
+<body>
+    <h5>Exemplo de caixas</h5>
+    <div id="conteiner-total">
+    <div><h5>Caixa 01<h5></h5></div>
+    <div><h5>Caixa 02<h5></h5></div>
+    <div><h5>Caixa 03<h5></h5></div>
+    <div><h5>Caixa 04<h5></h5></div>
+
+    </div>
+    
+</body>
+</html>

@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corrida de Peixes</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: linear-gradient(180deg, #021B79 0%, #0575E6 100%);
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        header {
+            text-align: center;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 3px solid #00d2ff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #00f2fe;
+            text-shadow: 0 0 10px rgba(0, 242, 254, 0.6);
+        }
+
+        .controles {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        button {
+            background: #ff007f;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(255, 0, 127, 0.4);
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            background: #ff2a9d;
+        }
+
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        /* PISTA DA CORRIDA */
+        .pista-container {
+            flex: 1;
+            position: relative;
+            background: rgba(4, 32, 98, 0.6);
+            border: 4px solid #00d2ff;
+            border-radius: 15px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            min-height: 600px;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+        }
+
+        /* LINHA DE CHEGADA (ESQUERDA) */
+        .linha-chegada {
+            position: absolute;
+            left: 90px;
+            top: 0;
+            bottom: 0;
+            width: 25px;
+            background: repeating-linear-gradient(
+                0deg,
+                #fff 0px, #fff 15px,
+                #000 15px, #000 30px
+            );
+            z-index: 5;
+            box-shadow: 3px 0 10px rgba(0,0,0,0.5);
+        }
+
+        .linha-chegada::after {
+            content: "CHEGADA";
+            position: absolute;
+            top: 50%;
+            left: -35px;
+            transform: rotate(-90deg) translateY(-50%);
+            color: #fff;
+            font-weight: bold;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-shadow: 1px 1px 3px black;
+        }
+
+        /* LINHA DE LARGADA (DIREITA) */
+        .linha-largada {
+            position: absolute;
+            right: 150px;
+            top: 0;
+            bottom: 0;
+            width: 10px;
+            background: #ffea00;
+            z-index: 5;
+            box-shadow: -2px 0 8px rgba(255, 234, 0, 0.8);
+        }
+
+        .linha-largada::after {
+            content: "LARGADA";
+            position: absolute;
+            top: 50%;
+            right: -35px;
+            transform: rotate(90deg) translateY(-50%);
+            color: #ffea00;
+            font-weight: bold;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-shadow: 1px 1px 3px black;
+        }
+
+        /* RAIA DE CADA PEIXE */
+        .raia {
+            position: relative;
+            width: 100%;
+            height: 85px;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+        }
+
+        /* DIV DO PEIXE QUE SE MOVE */
+        .peixe-box {
+            position: absolute;
+            /* Posição inicial na extrema direita */
+            right: 20px; 
+            width: 160px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            will-change: right;
+        }
+
+        /* ANIMAÇÃO DE NADAR - IMAGEM AUMENTADA PARA 150px DE LARGURA */
+        .peixe-img {
+            width: 150px;
+            height: auto;
+            max-height: 75px;
+            object-fit: contain;
+            filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.5));
+            animation: nadar 0.6s infinite alternate ease-in-out;
+        }
+
+        @keyframes nadar {
+            0% { transform: translateY(-3px) rotate(-2deg); }
+            100% { transform: translateY(3px) rotate(2deg); }
+        }
+
+        /* EFEITO TURBO */
+        .peixe-box.turbo .peixe-img {
+            filter: drop-shadow(0 0 12px #ffea00) drop-shadow(0 0 25px #ff0000);
+            animation: nadar-turbo 0.2s infinite alternate ease-in-out;
+        }
+
+        @keyframes nadar-turbo {
+            0% { transform: translateY(-5px) scale(1.1); }
+            100% { transform: translateY(5px) scale(1.1); }
+        }
+
+        .turbo-badge {
+            display: none;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff0000;
+            color: #fff;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 10px;
+            box-shadow: 0 0 8px red;
+            z-index: 12;
+        }
+
+        .peixe-box.turbo .turbo-badge {
+            display: block;
+        }
+
+        /* PLACAR LATERAL */
+        .placar-container {
+            width: 280px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid #00d2ff;
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .placar-container h2 {
+            font-size: 1.2rem;
+            color: #ffea00;
+            margin-bottom: 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 5px;
+        }
+
+        .placar-lista {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .placar-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .placar-pos {
+            width: 25px;
+            height: 25px;
+            background: #00d2ff;
+            color: #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        /* CRONÔMETRO */
+        .tempo-box {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #00f2fe;
+        }
+
+        /* SVG FALLBACK */
+        .svg-peixe {
+            width: 120px;
+            height: 70px;
+        }
+
+        /* POPUP DO VENCEDOR */
+        .modal-vencedor {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .modal-card {
+            background: linear-gradient(135deg, #108dc7, #ef8e38);
+            padding: 30px 50px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🏁 Grande Corrida de Peixes 🏁</h1>
+        <div class="controles">
+            <button id="btnIniciar" onclick="iniciarCorrida()">🚀 INICIAR CORRIDA</button>
+            <button id="btnReiniciar" onclick="resetarCorrida()" disabled>🔄 REINICIAR</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- PISTA DE CORRIDA -->
+        <div class="pista-container" id="pista">
+            <div class="linha-chegada"></div>
+            <div class="linha-largada"></div>
+
+            <!-- PEIXE 1 -->
+            <div class="raia">
+                <div id="peixe1" class="peixe-box">
+                    <span class="turbo-badge">TURBO</span>
+                    <img src="peixaonilo.png" class="peixe-img" onerror="carregarSvgFallback(this, '#ff0055', 'Nilo')" />
+                </div>
+            </div>
+
+            <!-- PEIXE 2 -->
+            <div class="raia">
+                <div id="peixe2" class="peixe-box">
+                    <span class="turbo-badge">TURBO</span>
+                    <img src="peixepierri.png" class="peixe-img" onerror="carregarSvgFallback(this, '#00ff88', 'Pierri')" />
+                </div>
+            </div>
+
+            <!-- PEIXE 3 -->
+            <div class="raia">
+                <div id="peixe3" class="peixe-box">
+                    <span class="turbo-badge">TURBO</span>
+                    <img src="peixegui.png" class="peixe-img" onerror="carregarSvgFallback(this, '#ffea00', 'Gui')" />
+                </div>
+            </div>
+
+            <!-- PEIXE 4 -->
+            <div class="raia">
+                <div id="peixe4" class="peixe-box">
+                    <span class="turbo-badge">TURBO</span>
+                    <img src="peixemarcio.png" class="peixe-img" onerror="carregarSvgFallback(this, '#ff00ff', 'Marcio')" />
+                </div>
+            </div>
+
+            <!-- PEIXE 5 -->
+            <div class="raia">
+                <div id="peixe5" class="peixe-box">
+                    <span class="turbo-badge">TURBO</span>
+                    <img src="peixesergio.png" class="peixe-img" onerror="carregarSvgFallback(this, '#00ffff', 'Sergio')" />
+                </div>
+            </div>
+
+            <!-- PEIXE 6 -->
+            <div class="raia">
+                <div id="peixe6" class="peixe-box">
+                    <span class="turbo-badge">TURBO</span>
+                    <img src="peixecalli.png" class="peixe-img" onerror="carregarSvgFallback(this, '#ff8800', 'Calli')" />
+                </div>
+            </div>
+        </div>
+
+        <!-- PLACAR EM TEMPO REAL -->
+        <div class="placar-container">
+            <h2>🏆 PLACAR AO VIVO</h2>
+            <ul class="placar-lista" id="placar">
+                <!-- Preenchido via JavaScript -->
+            </ul>
+            <div class="tempo-box">
+                ⏱️ Tempo: <span id="cronometro">00.0</span>s
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DO VENCEDOR -->
+    <div class="modal-vencedor" id="modalVencedor">
+        <div class="modal-card">
+            <h1 style="font-size: 2.5rem; margin-bottom: 10px;">🏆 CAMPEÃO! 🏆</h1>
+            <h2 id="nomeVencedor" style="font-size: 2rem; color: #ffea00; margin-bottom: 20px;">Peixe Nilo</h2>
+            <button onclick="fecharModal()" style="background: #000; color: #fff;">FECHAR</button>
+        </div>
+    </div>
+
+    <script>
+        // Dados dos Peixes
+        const peixesDados = [
+            { id: "peixe1", nome: "Nilo", posicaoRight: 20, turbo: false },
+            { id: "peixe2", nome: "Pierri", posicaoRight: 20, turbo: false },
+            { id: "peixe3", nome: "Gui", posicaoRight: 20, turbo: false },
+            { id: "peixe4", nome: "Marcio", posicaoRight: 20, turbo: false },
+            { id: "peixe5", nome: "Sergio", posicaoRight: 20, turbo: false },
+            { id: "peixe6", nome: "Calli", posicaoRight: 20, turbo: false }
+        ];
+
+        let animacaoFrame;
+        let intervaloVelocidades;
+        let corridaEmAndamento = false;
+        let tempoInicio = 0;
+
+        const POSICAO_LARGADA = 20; // Posição inicial na direita (em px)
+
+        window.onload = () => {
+            resetarCorrida();
+        };
+
+        // Loop principal da corrida
+        function loopCorrida() {
+            if (!corridaEmAndamento) return;
+
+            const larguraPista = document.getElementById("pista").offsetWidth;
+            // Ponto exato da linha de chegada no lado esquerdo levando em conta o novo tamanho
+            const limiteChegada = larguraPista - 240; 
+
+            let vencedor = null;
+
+            // Atualiza o cronômetro
+            const tempoDecorrido = ((Date.now() - tempoInicio) / 1000).toFixed(1);
+            document.getElementById("cronometro").innerText = tempoDecorrido;
+
+            // Move cada peixe para a esquerda (aumentando a distância a partir da direita)
+            peixesDados.forEach(peixe => {
+                let velocidade = peixe.velocidadeAtual;
+
+                if (peixe.turbo) {
+                    velocidade *= 2.0;
+                }
+
+                // Incrementa 'posicaoRight' (move para a esquerda)
+                peixe.posicaoRight += velocidade;
+
+                const elemento = document.getElementById(peixe.id);
+                elemento.style.right = peixe.posicaoRight + "px";
+
+                // Checa quem atingiu a linha de chegada na esquerda primeiro
+                if (peixe.posicaoRight >= limiteChegada && !vencedor) {
+                    vencedor = peixe;
+                }
+            });
+
+            // Atualiza o ranking ao vivo
+            atualizarPlacar();
+
+            if (vencedor) {
+                finalizarCorrida(vencedor);
+            } else {
+                animacaoFrame = requestAnimationFrame(loopCorrida);
+            }
+        }
+
+        function iniciarCorrida() {
+            if (corridaEmAndamento) return;
+
+            corridaEmAndamento = true;
+            tempoInicio = Date.now();
+
+            document.getElementById("btnIniciar").disabled = true;
+            document.getElementById("btnReiniciar").disabled = false;
+
+            // Velocidades calculadas para a corrida durar cerca de 50 segundos
+            peixesDados.forEach(peixe => {
+                peixe.velocidadeAtual = Math.random() * 0.4 + 0.35;
+            });
+
+            // Gerenciador de ultrapassagens e MODO TURBO
+            intervaloVelocidades = setInterval(() => {
+                // Descobre quem está atrás (menor posicaoRight)
+                const peixesOrdenados = [...peixesDados].sort((a, b) => b.posicaoRight - a.posicaoRight);
+                const ultimoColocado = peixesOrdenados[peixesOrdenados.length - 1];
+
+                peixesDados.forEach(peixe => {
+                    peixe.velocidadeAtual = Math.random() * 0.45 + 0.3;
+
+                    // O peixe em último lugar tem chance de ativar TURBO e ultrapassar
+                    if (peixe.id === ultimoColocado.id && Math.random() < 0.7) {
+                        peixe.turbo = true;
+                        document.getElementById(peixe.id).classList.add("turbo");
+
+                        setTimeout(() => {
+                            peixe.turbo = false;
+                            document.getElementById(peixe.id).classList.remove("turbo");
+                        }, 1800);
+                    }
+                });
+            }, 1500);
+
+            animacaoFrame = requestAnimationFrame(loopCorrida);
+        }
+
+        function finalizarCorrida(vencedor) {
+            corridaEmAndamento = false;
+            cancelAnimationFrame(animacaoFrame);
+            clearInterval(intervaloVelocidades);
+
+            peixesDados.forEach(p => {
+                document.getElementById(p.id).classList.remove("turbo");
+            });
+
+            document.getElementById("nomeVencedor").innerText = `🥇 Peixe ${vencedor.nome}!`;
+            document.getElementById("modalVencedor").style.display = "flex";
+        }
+
+        function resetarCorrida() {
+            corridaEmAndamento = false;
+            cancelAnimationFrame(animacaoFrame);
+            clearInterval(intervaloVelocidades);
+
+            // Reseta todos os peixes na linha de largada na direita
+            peixesDados.forEach(peixe => {
+                peixe.posicaoRight = POSICAO_LARGADA;
+                peixe.turbo = false;
+                const elemento = document.getElementById(peixe.id);
+                elemento.style.right = POSICAO_LARGADA + "px";
+                elemento.classList.remove("turbo");
+            });
+
+            document.getElementById("cronometro").innerText = "00.0";
+            document.getElementById("btnIniciar").disabled = false;
+            document.getElementById("btnReiniciar").disabled = true;
+
+            atualizarPlacar();
+        }
+
+        function atualizarPlacar() {
+            // Ordena o ranking por quem tem maior 'posicaoRight' (mais perto da esquerda/chegada)
+            const ranking = [...peixesDados].sort((a, b) => b.posicaoRight - a.posicaoRight);
+
+            const placarUl = document.getElementById("placar");
+            placarUl.innerHTML = "";
+
+            ranking.forEach((peixe, index) => {
+                const li = document.createElement("li");
+                li.className = "placar-item";
+                
+                li.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="placar-pos">${index + 1}º</span>
+                        <span>Peixe ${peixe.nome}</span>
+                    </div>
+                    ${peixe.turbo ? '<span style="color:#ffea00; font-size:12px;">🔥 TURBO</span>' : ''}
+                `;
+                placarUl.appendChild(li);
+            });
+        }
+
+        function fecharModal() {
+            document.getElementById("modalVencedor").style.display = "none";
+        }
+
+        // Desenha o peixe SVG maior caso a foto não exista na pasta
+        function carregarSvgFallback(imgElement, cor, nome) {
+            const parent = imgElement.parentElement;
+            imgElement.remove();
+
+            const svg = `
+                <svg class="peixe-img svg-peixe" viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M 20 30 Q 50 5, 80 30 Q 50 55, 20 30 Z" fill="${cor}" />
+                    <polygon points="80,30 95,15 95,45" fill="${cor}" opacity="0.8" />
+                    <circle cx="35" cy="23" r="4" fill="white" />
+                    <circle cx="34" cy="23" r="2" fill="black" />
+                    <text x="50" y="34" font-size="9" fill="white" font-weight="bold" text-anchor="middle">${nome}</text>
+                </svg>
+            `;
+            parent.insertAdjacentHTML('beforeend', svg);
+        }
+    </script>
+</body>
+</html>

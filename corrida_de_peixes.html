@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grande Corrida de Peixes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: rgb(6, 49, 168);
+            overflow-x: hidden;
+            user-select: none;
+        }
+        
+        .font-game {
+            font-family: 'Fredoka One', cursive;
+        }
+
+        /* Efeito de Ondas e Bolhas no Fundo */
+        .bubble {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 50%;
+            bottom: -50px;
+            animation: rise 8s infinite ease-in;
+            pointer-events: none;
+        }
+
+        @keyframes rise {
+            0% { transform: translateY(0) scale(0.8); opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { transform: translateY(-110vh) scale(1.3); opacity: 0; }
+        }
+
+        /* Pattern da Faixa de Chegada Xadrez */
+        .finish-line {
+            background-image: 
+                linear-gradient(45deg, #000 25%, transparent 25%), 
+                linear-gradient(-45deg, #000 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #000 75%), 
+                linear-gradient(-45deg, transparent 75%, #000 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            background-color: #fff;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.5);
+        }
+
+        /* Raia de Natação */
+        .lane {
+            background: rgba(255, 255, 255, 0.08);
+            border-bottom: 2px dashed rgba(255, 255, 255, 0.2);
+            position: relative;
+        }
+
+        /* Efeito de Turbulência / Animação de nado dos Peixes */
+        .fish-swim {
+            animation: wiggling 0.4s infinite alternate ease-in-out;
+        }
+
+        @keyframes wiggling {
+            0% { transform: translateY(-3px) rotate(-2deg); }
+            100% { transform: translateY(3px) rotate(2deg); }
+        }
+
+        .turbo-effect {
+            filter: drop-shadow(0 0 12px #ffdd00);
+        }
+    </style>
+</head>
+<body class="min-h-screen text-white flex flex-col justify-between relative overflow-hidden">
+
+    <div id="bubbles-container" class="absolute inset-0 pointer-events-none z-0"></div>
+
+    <header class="relative z-10 text-center pt-6 px-4">
+        <h1 class="text-3xl sm:text-5xl font-game text-yellow-300 drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] tracking-wide">
+            🐟 Olá, seja bem-vindo à corrida de peixe! 🏁
+        </h1>
+        <p class="text-blue-100 text-sm sm:text-base mt-2 font-semibold">
+            Os peixes mudam de velocidade dinamicamente! Quem está em último pode acelerar e ultrapassar a qualquer momento!
+        </p>
+        <hr class="border-t-2 border-blue-400/40 my-4 max-w-4xl mx-auto" />
+    </header>
+
+    <div class="relative z-10 text-center mb-4 flex justify-center items-center gap-4 flex-wrap">
+        <button id="btn-start" onclick="iniciarCorrida()" class="font-game bg-emerald-500 hover:bg-emerald-400 text-white text-lg px-8 py-3 rounded-full shadow-lg transform transition active:scale-95 flex items-center gap-2 border-2 border-emerald-300">
+            🚀 Iniciar Corrida
+        </button>
+        <button id="btn-reset" onclick="resetarCorrida()" class="font-game bg-amber-500 hover:bg-amber-400 text-white text-lg px-6 py-3 rounded-full shadow-lg transform transition active:scale-95 flex items-center gap-2 border-2 border-amber-300">
+            🔄 Reiniciar Posicionamento
+        </button>
+    </div>
+
+    <main class="relative z-10 max-w-6xl w-full mx-auto px-2 sm:px-6 my-auto">
+        <div class="relative bg-blue-900/60 backdrop-blur-md rounded-2xl border-4 border-blue-400/30 overflow-hidden shadow-2xl">
+            
+            <!-- FAIXA DE CHEGADA (Lado Esquerdo) -->
+            <div class="absolute left-0 top-0 bottom-0 w-10 sm:w-12 finish-line z-20 flex flex-col justify-around items-center border-r-4 border-yellow-400">
+                <span class="font-game text-black bg-yellow-400 px-1 text-[10px] sm:text-xs rounded font-bold uppercase rotate-90 my-auto shadow">
+                    CHEGADA
+                </span>
+            </div>
+
+            <!-- RAIAS DOS PEIXES -->
+            <div id="track-container" class="pl-12 sm:pl-14 pr-4 py-2 flex flex-col gap-2">
+                <!-- Raias injetadas via JavaScript -->
+            </div>
+        </div>
+    </main>
+
+    <footer class="relative z-10 text-center py-4 text-xs text-blue-200">
+        <p>Projeto VS Code • HTML5, CSS3 & JavaScript Vanilla</p>
+    </footer>
+
+    <div id="modal-vencedor" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-gradient-to-b from-blue-800 to-blue-950 border-4 border-yellow-400 rounded-3xl p-6 sm:p-8 max-w-md w-full text-center shadow-2xl transform transition-all scale-95 animate-bounce-in">
+            <div class="text-6xl mb-2">🏆</div>
+            <h2 class="text-3xl font-game text-yellow-300 mb-1">Temos um Campeão!</h2>
+            <p class="text-blue-200 text-sm mb-4">Cruzou a linha de chegada em primeiro lugar!</p>
+            
+            <div class="bg-blue-900/80 p-4 rounded-2xl border border-blue-400/30 mb-6 flex flex-col items-center">
+                <div id="modal-peixe-img" class="w-24 h-24 mb-2"></div>
+                <h3 id="modal-peixe-nome" class="text-2xl font-game text-white">---</h3>
+            </div>
+
+            <button onclick="fecharModalECancelar()" class="font-game bg-yellow-400 hover:bg-yellow-300 text-blue-950 text-lg px-8 py-3 rounded-full shadow-lg w-full transform transition active:scale-95">
+                Jogar Novamente 🏁
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Configuração dos 6 peixes com suas fotos e ilustrações fallback (SVG)
+        const peixesData = [
+            { id: 'peixe1', nome: 'Nilo', file: 'peixaonilo.png', color: '#EF4444', svgIcon: '🐠' },
+            { id: 'peixe2', nome: 'Pierri', file: 'peixepierri.png', color: '#3B82F6', svgIcon: '🐟' },
+            { id: 'peixe3', nome: 'Gui', file: 'peixegui.png', color: '#10B981', svgIcon: '🐡' },
+            { id: 'peixe4', nome: 'Márcio', file: 'peixemarcio.png', color: '#F59E0B', svgIcon: '🦈' },
+            { id: 'peixe5', nome: 'Sérgio', file: 'peixesergio.png', color: '#8B5CF6', svgIcon: '🐬' },
+            { id: 'peixe6', nome: 'Calli', file: 'peixecalli.png', color: '#EC4899', svgIcon: '🐳' }
+        ];
+
+        let peixesState = [];
+        let corridaAtiva = false;
+        let animationFrameId = null;
+        let mudancaVelocidadeTimer = null;
+
+        function initTrack() {
+            const container = document.getElementById('track-container');
+            container.innerHTML = '';
+            peixesState = [];
+
+            peixesData.forEach((p, index) => {
+                const lane = document.createElement('div');
+                lane.className = 'lane h-16 sm:h-20 rounded-xl flex items-center relative overflow-hidden';
+                
+                // Div do Peixe
+                const peixeDiv = document.createElement('div');
+                peixeDiv.id = p.id;
+                peixeDiv.className = 'absolute right-0 flex items-center gap-2 fish-swim transition-transform duration-100 ease-linear cursor-pointer';
+                peixeDiv.style.right = '0px';
+
+                // Renderiza Imagem com Fallback para SVG se a foto PNG não existir na pasta local
+                peixeDiv.innerHTML = `
+                    <div class="flex items-center gap-2 bg-blue-950/70 px-3 py-1 rounded-full border border-white/20 shadow-md">
+                        <span class="font-game text-xs sm:text-sm text-yellow-300">${p.nome}</span>
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 relative flex items-center justify-center">
+                            <img src="${p.file}" alt="${p.nome}" class="w-full h-full object-contain" 
+                                 onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                            <div class="hidden w-full h-full text-2xl sm:text-3xl items-center justify-center">${p.svgIcon}</div>
+                        </div>
+                    </div>
+                `;
+
+                lane.appendChild(peixeDiv);
+                container.appendChild(lane);
+
+                // Guarda estado inicial do peixe
+                peixesState.push({
+                    id: p.id,
+                    nome: p.nome,
+                    posicaoRight: 0, // Inicia na direita (largada) e diminui até alcançar a esquerda
+                    velocidade: Math.random() * 2 + 1, // Velocidade base
+                    file: p.file,
+                    svgIcon: p.svgIcon,
+                    element: peixeDiv,
+                    laneWidth: 0
+                });
+            });
+
+            gerarBolhas();
+        }
+
+        function iniciarCorrida() {
+            if (corridaAtiva) return;
+
+            corridaAtiva = true;
+            document.getElementById('btn-start').disabled = true;
+            document.getElementById('btn-start').classList.add('opacity-50', 'cursor-not-allowed');
+
+            // 1. Inicia o loop de movimentação fluida
+            requestAnimationFrame(loopCorrida);
+
+            // 2. MUDANÇA DINÂMICA DE VELOCIDADE:
+            // A cada 600ms, sorteamos novas velocidades. Dá efeito de 'boosters' / ultrapassagens!
+            mudancaVelocidadeTimer = setInterval(() => {
+                if (!corridaAtiva) return;
+
+                // Encontra a posição atual de quem está mais atrás para dar um boost extra
+                const maiorDistancia = Math.max(...peixesState.map(p => p.posicaoRight));
+
+                peixesState.forEach(p => {
+                    // Sorteia nova velocidade base de 1.2 a 5.5
+                    let novaVelocidade = Math.random() * 4.3 + 1.2;
+
+                    // BÔNUS ULTRAPASSAGEM: Se o peixe estiver muito atrás (último/penúltimo), ele tem 45% de chance de dar um "Sprint Turbo"
+                    if (p.posicaoRight <= maiorDistancia * 0.75 && Math.random() < 0.45) {
+                        novaVelocidade += Math.random() * 4.5 + 2.0; // Velocidade extra de arranque!
+                        p.element.classList.add('turbo-effect');
+                    } else {
+                        p.element.classList.remove('turbo-effect');
+                    }
+
+                    p.velocidade = novaVelocidade;
+                });
+            }, 600);
+        }
+
+        function loopCorrida() {
+            if (!corridaAtiva) return;
+
+            const containerWidth = document.getElementById('track-container').clientWidth;
+            // A linha de chegada está na esquerda, considerando a largura do elemento do peixe
+            const limiteChegada = containerWidth - 80; 
+
+            let vencedor = null;
+
+            peixesState.forEach(p => {
+                // Peixe avança da direita em direção à esquerda (aumenta o deslocamento no eixo X negativo ou aumenta `posicaoRight`)
+                p.posicaoRight += p.velocidade;
+                p.element.style.transform = `translateX(${-p.posicaoRight}px)`;
+
+                // Verifica se cruzou a linha de chegada no lado esquerdo
+                if (p.posicaoRight >= limiteChegada && !vencedor) {
+                    vencedor = p;
+                }
+            });
+
+            if (vencedor) {
+                finalizarCorrida(vencedor);
+            } else {
+                animationFrameId = requestAnimationFrame(loopCorrida);
+            }
+        }
+
+        function finalizarCorrida(vencedor) {
+            corridaAtiva = false;
+            clearInterval(mudancaVelocidadeTimer);
+            cancelAnimationFrame(animationFrameId);
+
+            // Dispara Confetes
+            confetti({
+                particleCount: 120,
+                spread: 80,
+                origin: { y: 0.6 }
+            });
+
+            // Exibe Modal do Campeão
+            document.getElementById('modal-peixe-nome').innerText = vencedor.nome;
+            document.getElementById('modal-peixe-img').innerHTML = `
+                <img src="${vencedor.file}" alt="${vencedor.nome}" class="w-full h-full object-contain" 
+                     onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='block';" />
+                <div class="hidden text-6xl">${vencedor.svgIcon}</div>
+            `;
+            
+            document.getElementById('modal-vencedor').classList.remove('hidden');
+        }
+
+        function fecharModalECancelar() {
+            document.getElementById('modal-vencedor').classList.add('hidden');
+            resetarCorrida();
+        }
+
+        function resetarCorrida() {
+            corridaAtiva = false;
+            clearInterval(mudancaVelocidadeTimer);
+            cancelAnimationFrame(animationFrameId);
+
+            document.getElementById('btn-start').disabled = false;
+            document.getElementById('btn-start').classList.remove('opacity-50', 'cursor-not-allowed');
+
+            peixesState.forEach(p => {
+                p.posicaoRight = 0;
+                p.velocidade = 0;
+                p.element.style.transform = `translateX(0px)`;
+                p.element.classList.remove('turbo-effect');
+            });
+        }
+
+        function gerarBolhas() {
+            const container = document.getElementById('bubbles-container');
+            container.innerHTML = '';
+            for (let i = 0; i < 18; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                const size = Math.random() * 30 + 10;
+                bubble.style.width = `${size}px`;
+                bubble.style.height = `${size}px`;
+                bubble.style.left = `${Math.random() * 100}%`;
+                bubble.style.animationDuration = `${Math.random() * 6 + 4}s`;
+                bubble.style.animationDelay = `${Math.random() * 4}s`;
+                container.appendChild(bubble);
+            }
+        }
+
+        // Inicializa a pista no carregamento da janela
+        window.onload = initTrack;
+    </script>
+</body>
+</html>
