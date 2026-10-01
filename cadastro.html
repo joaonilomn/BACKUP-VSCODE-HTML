@@ -1,0 +1,241 @@
+<html>
+    <head>
+        <title>Formulário de cadastro</title>
+        <style>
+            *{
+                box-sizing: border-box;
+            }
+            body{
+                background-color: #edf2f7;
+                font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+                color: #1a2535;
+                margin: 0 auto;
+                max-width: 740px;
+            }
+            header{
+                margin-bottom: 1.5rem;
+            }
+            header h1{
+                font-size: 1.5rem;
+                font-weight: bold;
+            }
+            header p{
+                margin: 0 0 0.7rem;
+                line-height: 1.5;
+                font-size: 0.9rem;
+            }
+            form p {
+            display: flex;
+            flex-direction: column;gap: 0.35rem;
+            margin: 0;
+            }
+            header small{
+                display: inline-block;
+                font-size: 0.70rem;
+                background-color: #dbeafe;
+                padding: 0.25rem 0.7rem;
+                border-radius: 99px;
+            }
+            fieldset{
+                background-color: #ffffff;
+                border-radius: 10px;
+                padding: 1.5rem;
+                /*display: flex;
+                flex-direction: column;*/
+            }
+            fieldset div{
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+            }
+            input{
+                padding: 5px;
+            }
+            input[type="color"]{
+            padding: 5px;
+            height: 40px;
+            padding: 3px;
+            border: 1px solid #1a2535;
+        }
+            select{
+                height: 30px;
+                padding: 0.35rem;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>Formulário de Cadastro</h1>
+            <p>Preencha todas as seções abaixo para concorrer a uma de nossas vagas abertas.</p>
+            <small>* Campos obrigatórios</small>
+        </header>
+        <form>
+            <fieldset>
+                <legend>Identificação Pessoal</legend>
+                <div>
+                    <p>
+                        <label for="nome">Nome Completo</label>
+                        <input type="text" name="nome" id="nome" placeholder="Ex: João Nilo"/>
+                </p>
+                    <p>
+                    <label for="nascimento">Data de Nascimento</label>
+                    <input type="date" name="nascimento" id="nascimento" />
+                </p>
+                </div>
+                <p>
+                    <label>Sexo</label>
+                    <label><input type="radio" name="sexo" value="m" /> Masculino</label>
+                    <label><input type="radio" name="sexo" value="f" /> Feminino</label>
+                </p>
+                <div>
+                    <p>
+                        <label for="cpf">CPF</label>
+                        <input type="text" name="cpf" id="cpf" placeholder="000.000.000-00"/>
+                    </p>
+                    <p>
+                        <label for="Cor do perfil">Cor do Perfil</label>
+                        <input type="color" name="cor-perfil" id="cor-perfil" />
+                    </p>
+                </div>
+                <div>
+                    <p>
+                        <label for="email">E-Mail</label>
+                        <input type="email" name="email" id="email" placeholder="voce@exemplo.com"/>
+                    </p>
+                    <p>
+                        <label for="telefone">Telefone</label>
+                        <input type="tel" name="telefone" id="telefone" placeholder="(00) 00000-0000"/>
+                    </p>
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>Endereço</legend>
+                <div>
+                    <p>
+                        <label for="cep">CEP</label>
+                        <input type="text" id="cep" name="cep" placeholder="0000-000" maxlength="9"/>
+                    </p>
+                    <p>
+                        <label for="numero">Numero</label>
+                        <input type="number" id="numero" name="numero" placeholder="123" min="1" max="99999"/>
+                    </p>
+                </div>
+                <div>
+                    <p>
+                        <label for="logradoura">Logradouro</label>
+                        <input type="text" id="logradouro" name="logradouro" placeholder="Rua, Av., Alameda..."/>
+                    </p>
+                    <p>
+                        <label for="estado">Estado</label>
+                        <select id="estado" name="estado" required>
+                            <option value="">Selecione...</option>
+                            <option value="AC">Acre</option>
+                            <option value="AL">Alagoas</option>
+                            <option value="AP">Amapá</option>
+                            <option value="AM">Amazonas</option>
+                            <option value="BA">Bahia</option>
+                            <option value="CE">Ceará</option>
+                            <option value="DF">Distrito Federal</option>
+                            <option value="ES">Espírito Santo</option>
+                            <option value="GO">Goiás</option>
+                            <option value="MA">Maranhão</option>
+                            <option value="MT">Mato Grosso</option>
+                            <option value="MS">Mato Grosso do Sul</option>
+                            <option value="MG">Minas Gerais</option>
+                            <option value="PA">Pará</option>
+                            <option value="PB">Paraíba</option>
+                            <option value="PR">Paraná</option>
+                            <option value="PE">Pernambuco</option>
+                            <option value="PI">Piauí</option>
+                            <option value="RJ">Rio de Janeiro</option>
+                            <option value="RN">Rio Grande do Norte</option>
+                            <option value="RS">Rio Grande do Sul</option>
+                            <option value="RO">Rondônia</option>
+                            <option value="RR">Roraima</option>
+                            <option value="SC">Santa Catarina</option>
+                            <option value="SP">São Paulo</option>
+                            <option value="SE">Sergipe</option>
+                            <option value="TO">Tocantins</option>
+                        </select>
+                    </p>
+                </div>
+                <div>
+                    <p>
+                        <label for="complemento">Complemento</label>
+                        <input type="text" id="complemento" name="complemento" placeholder="Ex: Apartamento 301"/>
+                    </p>
+                    <p>
+                        <label for="cidade">Cidade</label>
+                        <input type="text" id="cidade" name="cidade" placeholder="Ex: São Paulo"/>
+                    </p>
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>Candidatura</legend>
+                <p>
+                <label for="vaga">Vaga Pretendida</label>
+                <input type="search" id="vaga" name="vaga" list="vagas-lista" placeholder="Busque ou Digite a Vaga" required>
+                <datalist id="vagas-lista">
+                    <option value="Desenvolvedor Front-End">
+                    <option value="Desenvolvedor Back-End">
+                    <option value="Teste QA">
+                </datalist>
+                </p>
+                <div>
+                    <p>
+                    <label for="nivel de experiencia">Nível de Experiência</label>
+                    <select id="nivel de experiencia" name="nivel de experiencia" required>
+                        <option value="">Selecione...</option>
+                        <option value="estagiário">Estagiário</option>
+                        <option value="júnior">Júnior</option>
+                        <option value="pleno">Pleno</option>
+                        <option value="sênior">Sênior</option>
+                        <option value="especialista">Especialista</option>
+                        <option value="gerencia">Gêrencia</option>
+                    </select>
+                </p>
+                <p>
+                    <label for="disponivel ">Disponível a partir de </label>
+                    <input type="date" name="disponivel" id="disponivel" />
+                </p>
+            </div>
+            <div>
+                <p>
+                <label for="modalidade">Modalidade de Trabalho</label>
+                <label><input type="radio" id="modalidade" name="modalidade" value="presencial" required> Presencial
+                <input type="radio" name="modalidade" value="remoto"> Remoto
+                <input type="radio" name="modalidade" value="hibrido"> Híbrido</label>
+            </p>
+            </div>
+            <p>
+                <label for="contrato">Tipo de contrato</label>
+                <label>
+                    <input type="radio" name="clt" value="clt" /> CLT
+                    <input type="radio" name="pj" value="pj" /> PJ
+                    <input type="radio" name="estagiario" value="estagio" /> Estagio
+                    <input type="radio" name="freelance" value="freelance" /> Freelance
+                </label>
+            </p>
+            <div>
+                    <p>
+                    <label>Horário de trabalho preferido</label>
+                    <input type="time" id="horario" name="horario" min="08:00" max="18:00">
+                </p>
+                <p>
+                    <label>Dias da semana</label>
+                    <input type="week" id="semana" name="semana">
+                </p>
+            </div>
+            <p>
+                <label>Data e hora de encerramento do último emprego</label>
+                <input type="datetime-local" id="data-ultimo-emprego" name="data-ultimo-emprego">
+            </p>
+            <p>
+                <label>Pretensão salarial</label>
+                <input type="range" id="pretensao" name="pretensao" min="1621" max="45000">
+                <small>Arraste para indicar a faixa salarial entre (R$1.621 e R$45.000)</small>
+            </p>
+            </fieldset>
+        </form>
+    </body>
+</html>
